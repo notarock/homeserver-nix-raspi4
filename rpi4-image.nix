@@ -2,11 +2,11 @@
   nixpkgs.localSystem.system = "aarch64-linux";
   imports =
     [ <nixpkgs/nixos/modules/installer/sd-card/sd-image.nix> ./base-config.nix ];
-  boot.kernelPackages = pkgs.linuxPackages_rpi4;
-  boot.loader.grub.enable = false;
-  boot.loader.generic-extlinux-compatible.enable = true;
+    boot.kernelPackages = pkgs.linuxPackages_rpi4;
+    boot.loader.grub.enable = false;
+    boot.loader.generic-extlinux-compatible.enable = true;
 
-  boot.consoleLogLevel = lib.mkDefault 7;
+    boot.consoleLogLevel = lib.mkDefault 7;
 
   # The serial ports listed here are:
   # - ttyS0: for Tegra (Jetson TX1)
@@ -14,7 +14,7 @@
   boot.kernelParams =
     [ "console=ttyS0,115200n8" "console=ttyAMA0,115200n8" "console=tty0" ];
 
-  boot.initrd.availableKernelModules = [
+    boot.initrd.availableKernelModules = [
     # Allows early (earlier) modesetting for the Raspberry Pi
     "vc4"
     "bcm2835_dma"
@@ -23,6 +23,15 @@
     "sun4i_drm"
     "sun8i_drm_hdmi"
     "sun8i_mixer"
+  ];
+
+  # Fix missing modules
+  # https://github.com/NixOS/nixpkgs/issues/154163
+  nixpkgs.overlays = [
+    (final: super: {
+      makeModulesClosure = x:
+      super.makeModulesClosure (x // { allowMissing = true; });
+    })
   ];
 
   sdImage = {
